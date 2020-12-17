@@ -97,6 +97,7 @@ int  main(){
 
 struct State* childStateCreate(struct State* s, int i, int j){
     struct State* state = copyState(s);
+    s->parent = s;
     struct Node* iNode = state->rows[i];
     if(iNode==NULL)
         return NULL;
