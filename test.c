@@ -15,10 +15,12 @@ int temp(){
 }
 
 int  main(){
-    int m = temp();
-    if(m==NULL){
-        printf("hello  world\n %d \n", m);
-    }
+    char m[100];
+    scanf("%[^\n]%*c", m);
+    scanf("%[^\n]%*c", m);
+    scanf("%[^\n]%*c", m);
+    scanf("%[^\n]%*c", m);
+
     
 }
 

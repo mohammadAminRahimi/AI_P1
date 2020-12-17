@@ -3,19 +3,16 @@
 #include <stdio.h>
 
 
-struct Card {
-    char color;
-    int number;
-};
 
 
 struct Node {
-    struct Card card;
+    char color;
+    int number;
     struct  Node* next;
 };
 
 struct State{
-    struct Node* rows;
+    struct Node** rows;
     struct State* parent;
 };
 
@@ -37,10 +34,14 @@ int numberOfRwos, numberOfColor, numberOfCards;
 
 
 int goalTest(struct State* state);
-struct State* initialStateInitializatiion();
+struct State* initialStateInitialization();
 void solution(struct State* state);
 int  isExplored(struct State);
 struct State* childNode(struct State* state, int i, int j);
+struct  Node*  newSNode(int number, char color);
+int getNumber(char* s);
+char getChar(char* s);
+void printState(struct State* state);
 
 //queue related functions declaration
 struct State* deQueue(struct Queue* q);
@@ -51,17 +52,23 @@ int isEmpty(struct Queue* q);
 int isInQueue(struct Queue* q, struct State* state);
 
 int  main(){
-    scanf("%d %d %d",&numberOfCards, &numberOfColor, &numberOfRwos);
+    scanf("%d",&numberOfCards);
+    scanf("%d",&numberOfColor);
+    scanf("%d",&numberOfRwos);
+    getchar();
+
     
     
     // initial state of the problem
-    struct State* initialState = initialStateInitializatiion();
+    struct State* initialState = initialStateInitialization();
 
     if(goalTest(initialState)){
         solution(initialState);
+        printf("WE ARE WINNER\n");
         return 0;
     }
-
+    printf("you are not winner\n");
+    return 0;
     struct Queue* frontier  = createQueue();
     enQueue(frontier, initialState);
     struct Queue* explored = createQueue();
@@ -99,11 +106,70 @@ struct State* childNode(struct State* state, int i, int j){
 
 
 int goalTest(struct State* state){
+    int colorCounter = 0;
+    for(int i=0 ; i<numberOfRwos ; i++){
+        struct Node* node = state->rows[i];
+        if(node==NULL)
+            continue;
+            
+        //chech to see if the row is empty
+        char color = node->color;
+        int number = node->number;
+        
+        if(number!=1)
+            return 0;
+
+        node = node->next;
+        for(int j=1 ; j<numberOfCards ; j++){
+            if(node==NULL){
+                return 0;
+            }
+            if(node->color!=color || node->number<=number){
+                return 0;
+            }
+            number = node->number;
+            node = node->next;
+        }
+        colorCounter++;
+    }
+    if(colorCounter==numberOfColor)
+        return 1;
     return 0;
 }
 
-struct State* initialStateInitializatiion(){
-    struct State* initialState = ;
+struct State* initialStateInitialization(){
+    struct State* initialState = (struct State*)malloc(sizeof(struct State));
+    initialState->rows = (struct Node**)malloc(numberOfRwos*sizeof(struct Node*));
+    for(int i=0 ; i<numberOfRwos ; i++)
+        initialState->rows[i] = NULL;
+    for(int i=0 ; i<numberOfRwos ; i++){
+        char string[40];
+        for(int j=0 ; j<40 ; j++){
+            string[j] = getchar();
+            if(string[j] == '\n'){
+                string[j] = '\0';
+                break;
+            }
+        }
+
+        if(strlen(string)==1)
+            continue;
+        char* token = strtok(string, " ");
+        while(token){
+            // printf("%s\n",token);
+            int number = getNumber(token);
+            char color =  getChar(token);
+            struct Node* node = newSNode(number, color);
+            node->next = initialState->rows[i];
+            initialState->rows[i] = node;
+            // printf("%d %c\n", initialState->rows[i]->number, initialState->rows[i]->color);
+            token = strtok(NULL, " ");
+        }
+    }
+
+
+
+    
     return initialState;
 }
 
@@ -111,14 +177,32 @@ void solution(struct State* state){
     return;
 }
 
+void printState(struct State* state){
+    struct Node* node;
+    for(int i=0 ; i<numberOfRwos ; i++){
+        node = state->rows[i];
+        for(int j=0 ; node!=NULL ; node=node->next){
+            printf("%c %d   ", node->color, node->number);
+        }
+        printf("\n");
+    }
+}
 
 
+
+struct  Node*  newSNode(int number, char color){
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->number = number;
+    node->color = color;
+    node->next = NULL;
+    return node;
+}
 
 
 
 
 // A utility function to create a new linked list node. 
-struct QNode* newNode(struct State* k) 
+struct QNode* newQNode(struct State* k) 
 { 
     struct QNode* temp = (struct QNode*)malloc(sizeof(struct QNode)); 
     temp->key = k; 
@@ -138,7 +222,7 @@ struct Queue* createQueue()
 void enQueue(struct Queue* q, struct State* key) 
 { 
     // Create a new LL node 
-    struct QNode* temp = newNode(key); 
+    struct QNode* temp = newQNode(key); 
   
     // If queue is empty, then new node is front and rear both 
     if (q->rear == NULL) { 
@@ -180,4 +264,15 @@ int isEmpty(struct Queue* q){
 
 int isInQueue(struct Queue* q, struct State* state){
     return 0;
+}
+
+
+
+
+int getNumber(char* s){
+    return s[0]-48;
+}
+
+char getChar(char* s){
+    return s[1];
 }
