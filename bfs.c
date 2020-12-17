@@ -30,18 +30,19 @@ struct Queue {
 }; 
 
 //global variables
-int numberOfRwos, numberOfColor, numberOfCards;
+int numberOfRows, numberOfColor, numberOfCards;
 
 
 int goalTest(struct State* state);
 struct State* initialStateInitialization();
 void solution(struct State* state);
 int  isExplored(struct State);
-struct State* childNode(struct State* state, int i, int j);
+struct State* childStateCreate(struct State* state, int i, int j);
 struct  Node*  newSNode(int number, char color);
 int getNumber(char* s);
 char getChar(char* s);
 void printState(struct State* state);
+struct State* copyState(struct State* state);
 
 //queue related functions declaration
 struct State* deQueue(struct Queue* q);
@@ -54,7 +55,7 @@ int isInQueue(struct Queue* q, struct State* state);
 int  main(){
     scanf("%d",&numberOfCards);
     scanf("%d",&numberOfColor);
-    scanf("%d",&numberOfRwos);
+    scanf("%d",&numberOfRows);
     getchar();
 
     
@@ -67,8 +68,6 @@ int  main(){
         printf("WE ARE WINNER\n");
         return 0;
     }
-    printf("you are not winner\n");
-    return 0;
     struct Queue* frontier  = createQueue();
     enQueue(frontier, initialState);
     struct Queue* explored = createQueue();
@@ -76,11 +75,11 @@ int  main(){
     while(!isEmpty(frontier)){
         struct State* state = deQueue(frontier);
         enQueue(explored, state);
-        for(int i=0 ; i<numberOfRwos ; i++){
-            for(int j=0 ; j<numberOfRwos ; j++){
+        for(int i=0 ; i<numberOfRows ; i++){
+            for(int j=0 ; j<numberOfRows ; j++){
                 if(i==j)
                     continue;
-                struct State* childState =  childNode(state, i, j);
+                struct State* childState =  childStateCreate(state, i, j);
                 if(childState == NULL)
                     continue;
                 if(!isInQueue(explored, childState) && !isInQueue(frontier, childState)){
@@ -96,9 +95,20 @@ int  main(){
 }
 
 
-struct State* childNode(struct State* state, int i, int j){
-    struct State* childNode = NULL;
-    //
+struct State* childStateCreate(struct State* s, int i, int j){
+    struct State* state = copyState(s);
+    struct Node* iNode = state->rows[i];
+    if(iNode==NULL)
+        return NULL;
+    if(state->rows[j]!=NULL){
+        // printf("here %d %d\n",iNode->number, i);
+        // printf("here %d %d\n", state->rows[j]->number, j);
+        if(iNode->number >= state->rows[j]->number)
+            return NULL;
+    }
+    state->rows[i] = iNode->next;
+    iNode->next = state->rows[j];
+    state->rows[j] = iNode;
 
     return state;
 }
@@ -107,7 +117,7 @@ struct State* childNode(struct State* state, int i, int j){
 
 int goalTest(struct State* state){
     int colorCounter = 0;
-    for(int i=0 ; i<numberOfRwos ; i++){
+    for(int i=0 ; i<numberOfRows ; i++){
         struct Node* node = state->rows[i];
         if(node==NULL)
             continue;
@@ -139,10 +149,10 @@ int goalTest(struct State* state){
 
 struct State* initialStateInitialization(){
     struct State* initialState = (struct State*)malloc(sizeof(struct State));
-    initialState->rows = (struct Node**)malloc(numberOfRwos*sizeof(struct Node*));
-    for(int i=0 ; i<numberOfRwos ; i++)
+    initialState->rows = (struct Node**)malloc(numberOfRows*sizeof(struct Node*));
+    for(int i=0 ; i<numberOfRows ; i++)
         initialState->rows[i] = NULL;
-    for(int i=0 ; i<numberOfRwos ; i++){
+    for(int i=0 ; i<numberOfRows ; i++){
         char string[40];
         for(int j=0 ; j<40 ; j++){
             string[j] = getchar();
@@ -179,10 +189,10 @@ void solution(struct State* state){
 
 void printState(struct State* state){
     struct Node* node;
-    for(int i=0 ; i<numberOfRwos ; i++){
+    for(int i=0 ; i<numberOfRows ; i++){
         node = state->rows[i];
         for(int j=0 ; node!=NULL ; node=node->next){
-            printf("%c %d   ", node->color, node->number);
+            printf("%c%d   ", node->color, node->number);
         }
         printf("\n");
     }
@@ -263,6 +273,7 @@ int isEmpty(struct Queue* q){
 }
 
 int isInQueue(struct Queue* q, struct State* state){
+    
     return 0;
 }
 
@@ -275,4 +286,27 @@ int getNumber(char* s){
 
 char getChar(char* s){
     return s[1];
+}
+
+
+struct State* copyState(struct State* state){
+    struct State* newState = (struct State*)malloc(sizeof(struct State));
+    newState->rows = (struct Node**)malloc(numberOfRows*sizeof(struct Node*));
+    for(int i=0 ; i<numberOfRows ; i++)
+        newState->rows[i] = NULL;
+    for(int i=0 ; i<numberOfRows ; i++){
+        struct Node* node = state->rows[i];
+        if(node==NULL)
+            continue;
+
+        struct Node* temp = newSNode(node->number, node->color);
+        newState->rows[i] = temp;
+        node = node->next;
+        while(node!=NULL){
+            temp->next = newSNode(node->number, node->color);
+            temp = temp->next;
+            node = node->next;
+        }
+    }
+    return newState;
 }
