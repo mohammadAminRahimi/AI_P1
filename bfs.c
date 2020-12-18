@@ -43,7 +43,7 @@ int getNumber(char* s);
 char getChar(char* s);
 void printState(struct State* state);
 struct State* copyState(struct State* state);
-
+int compareState(struct State* first, struct State* second);
 //queue related functions declaration
 struct State* deQueue(struct Queue* q);
 void enQueue(struct Queue* q, struct State* key);
@@ -65,7 +65,6 @@ int  main(){
 
     if(goalTest(initialState)){
         solution(initialState);
-        printf("WE ARE WINNER\n");
         return 0;
     }
     struct Queue* frontier  = createQueue();
@@ -92,18 +91,17 @@ int  main(){
             }
         }
     }
+    printf("there is no solution \n");
 }
 
 
 struct State* childStateCreate(struct State* s, int i, int j){
     struct State* state = copyState(s);
-    s->parent = s;
+    state->parent = s;
     struct Node* iNode = state->rows[i];
     if(iNode==NULL)
         return NULL;
     if(state->rows[j]!=NULL){
-        // printf("here %d %d\n",iNode->number, i);
-        // printf("here %d %d\n", state->rows[j]->number, j);
         if(iNode->number >= state->rows[j]->number)
             return NULL;
     }
@@ -148,9 +146,11 @@ int goalTest(struct State* state){
     return 0;
 }
 
+
 struct State* initialStateInitialization(){
     struct State* initialState = (struct State*)malloc(sizeof(struct State));
     initialState->rows = (struct Node**)malloc(numberOfRows*sizeof(struct Node*));
+    initialState->parent = NULL;
     for(int i=0 ; i<numberOfRows ; i++)
         initialState->rows[i] = NULL;
     for(int i=0 ; i<numberOfRows ; i++){
@@ -176,22 +176,28 @@ struct State* initialStateInitialization(){
             // printf("%d %c\n", initialState->rows[i]->number, initialState->rows[i]->color);
             token = strtok(NULL, " ");
         }
-    }
-
-
-
-    
+    }  
     return initialState;
 }
 
 void solution(struct State* state){
-    return;
+    printf("***********************solution**********************\n");
+    while(state->parent != NULL){
+        printState(state);
+        printf("****************\n");
+        state =  state->parent;
+    }
+    printState(state);
 }
 
 void printState(struct State* state){
     struct Node* node;
     for(int i=0 ; i<numberOfRows ; i++){
         node = state->rows[i];
+        if(node==NULL){
+            printf("#\n");
+            continue;
+        }
         for(int j=0 ; node!=NULL ; node=node->next){
             printf("%c%d   ", node->color, node->number);
         }
@@ -274,9 +280,40 @@ int isEmpty(struct Queue* q){
 }
 
 int isInQueue(struct Queue* q, struct State* state){
-    
-    return 0;
+    struct QNode* qNode = q->front;
+    while(qNode!=NULL){
+        if(compareState(state, qNode->key)){
+            return 1;
+        }
+        qNode = qNode->next;
+    }
+    return  0;
 }
+
+
+int compareState(struct State* first, struct State* second){
+    for(int i=0 ; i<numberOfRows ; i++){
+        if(first->rows[i]==NULL || second->rows[i]==NULL){
+            if(first->rows[i]==NULL && second->rows[i]==NULL)
+                continue;
+            return 0;
+        }
+        struct Node* fNode = first->rows[i];
+        struct Node* sNode = second->rows[i];
+
+        while(fNode!=NULL && sNode!=NULL){
+            if(fNode->color!=sNode->color || fNode->number!=sNode->number)
+                return 0;
+            fNode = fNode->next;
+            sNode = sNode->next;
+        }
+        if(sNode!=NULL  || fNode!=NULL)
+            return 0;
+    }
+    return 1;
+}
+
+
 
 
 
