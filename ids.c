@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 struct Node {
     char color;
     int number;
