@@ -31,6 +31,8 @@ struct Queue {
 
 //global variables
 int numberOfRows, numberOfColor, numberOfCards;
+int numberOfCreatedState=0, numberOfExploredState=0; 
+
 
 void freeState(struct State* state);
 int goalTest(struct State* state);
@@ -64,6 +66,7 @@ int  main(){
     struct State* initialState = initialStateInitialization();
 
     if(goalTest(initialState)){
+        numberOfExploredState++;
         solution(initialState);
         return 0;
     }
@@ -74,6 +77,7 @@ int  main(){
     while(!isEmpty(frontier)){
         struct State* state = deQueue(frontier);
         enQueue(explored, state);
+        numberOfExploredState++;
         for(int i=0 ; i<numberOfRows ; i++){
             for(int j=0 ; j<numberOfRows ; j++){
                 if(i==j)
@@ -82,6 +86,7 @@ int  main(){
                 if(childState == NULL)
                     continue;
                 if(!isInQueue(explored, childState) && !isInQueue(frontier, childState)){
+                    numberOfCreatedState++;
                     if(goalTest(childState)){
                         solution(childState);
                         return 0;
@@ -180,6 +185,7 @@ struct State* initialStateInitialization(){
             token = strtok(NULL, " ");
         }
     }  
+    numberOfCreatedState++;
     return initialState;
 }
 
@@ -191,6 +197,7 @@ void solution(struct State* state){
         state =  state->parent;
     }
     printState(state);
+    printf("******\nnumber of created states:%d, number of explored states:%d", numberOfCreatedState, numberOfExploredState);
 }
 
 void printState(struct State* state){

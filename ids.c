@@ -29,9 +29,7 @@ void freeState(struct State* state);
 
 //global variables
 int numberOfRows, numberOfColor, numberOfCards;
-
-
-
+int numberOfCreatedState=0; 
 
 
 
@@ -48,6 +46,7 @@ int main(){
     getchar();
 
     struct State* initialState = initialStateInitialization();
+    numberOfCreatedState++;
     // *********************** 10 time
     for(int i=limit; i<limit+10 ; i++){
         int result = recursiveDLS(initialState, i);
@@ -74,6 +73,7 @@ int recursiveDLS(struct State* state, int limit){
             struct State* childState =  childStateCreate(state, i, j);
             if(childState == NULL)
                 continue;
+            numberOfCreatedState++;
             int result = recursiveDLS(childState, limit-1);
             if(result==1){
                 freeState(childState);
@@ -108,6 +108,7 @@ void solution(struct State* state){
         state =  state->parent;
     }
     printState(state);
+    printf("********\n number of created states:%d", numberOfCreatedState);
 }
 
 
